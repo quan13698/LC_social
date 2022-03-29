@@ -22,11 +22,18 @@ export const createMyProfile = async (req: Request | any, res: Response | any) =
             tiktok: tiktok,
             github: github,
         });
-        await newProfile.save();
-        res.status(200).json({
-            success: true,
-            data: newProfile,
-        });
+        if (Profile.length < 1) {
+            await newProfile.save();
+            res.status(200).json({
+                success: true,
+                data: newProfile,
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                data: 'A user is possible to create a profile!',
+            });
+        }
     } catch (error) {
         console.log(error);
     }
@@ -38,8 +45,8 @@ export const updateMyProfile = async (req: Request | any, res: Response | any) =
         const { company, location, status, skills, bio, youtube, linkedIn, tiktok, github } =
             req.body;
         const user = await User.findOne({ id: userId });
-        console.log(user);
-        const profile = await Profile.findOneAndUpdate( 
+        // console.log(user);
+        const profile = await Profile.findOneAndUpdate(
             { user: user._id },
             {
                 company: company,
@@ -55,11 +62,11 @@ export const updateMyProfile = async (req: Request | any, res: Response | any) =
         );
         if (profile) {
             res.status(200).json({
-                success: true
+                success: true,
             });
-        }else{
+        } else {
             res.status(400).json({
-                success: false
+                success: false,
             });
         }
     } catch (error) {
@@ -84,23 +91,52 @@ export const getCurrentProfile = async (req: Request | any, res: Response | any)
     }
 };
 
-export const getProfileById = async (req:Request | any, res: Response | any) => {
+export const getProfileById = async (req: Request | any, res: Response | any) => {
     const profileId = req.params.id;
     try {
-        const profile = await Profile.findOne({id: profileId});
-        if(!profile){
+        const profile = await Profile.findOne({ id: profileId });
+        if (!profile) {
             res.status(400).json({
                 success: false,
-                message: `Profle ID: ${profileId} does not exist`
-            })
+                message: `Profle ID: ${profileId} does not exist`,
+            });
         }
         res.status(200).json({
             success: true,
-            message: profile
-        })
-        
+            message: profile,
+        });
     } catch (error) {
         console.log(error);
-        
     }
-}
+};
+
+export const deleteProfile = async (req: Request | any, res: Response | any) => {
+    try {
+        const profileId = req.params.id;
+        const profile = await Profile.findOne({ _id: profileId });
+        if (profile) {
+            res.status(200).json({
+                success: true,
+                message: `Profile with ID: ${profile} has been removed!`,
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Can not find profile',
+            });
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+//create Experience
+export const createExperience = async (req: Request | any, res: Response | any) => {
+    const profileId = req.params.id;
+    const { title, company, position, from, to, current } = req.body;
+    const profile = await Profile.findOneAndUpdate(
+        { _id: profileId },
+        { title, company, position, from, to, current },
+    );
+    
+};
